@@ -1,27 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="532" viewBox="0 0 920 532" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="428" viewBox="0 0 840 428" role="img" aria-labelledby="title description">
   <title id="title">洋葱模型：多层嵌套、任一层失效都不致命</title>
   <desc id="description">零信任贯穿每一层 · 越靠外越接近攻击者，越靠内越接近核心逻辑</desc>
-  <rect width="920" height="532" fill="#FFFFFF"/>
+  <rect width="840" height="428" fill="#FFFFFF"/>
   <g font-family="Noto Sans CJK SC, sans-serif" text-anchor="middle">
-    <text x="460" y="36" font-size="26" font-weight="700" fill="#232F3E">洋葱模型：多层嵌套、任一层失效都不致命</text>
-    <text x="460" y="64" font-size="16" fill="#5F6B7A">零信任贯穿每一层 · 越靠外越接近攻击者，越靠内越接近核心逻辑</text>
-    <rect x="28" y="96" width="864" height="412" rx="14" fill="#F8FAFB" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="123" font-size="22" font-weight="500" fill="#232F3E">8  审计与治理层</text>
-    <rect x="46" y="136" width="828" height="366" rx="14" fill="#F5F8FA" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="163" font-size="22" font-weight="500" fill="#232F3E">7  凭证与下游访问层</text>
-    <rect x="64" y="176" width="792" height="320" rx="14" fill="#F1F5F7" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="203" font-size="22" font-weight="500" fill="#232F3E">6  工具授权层</text>
-    <rect x="82" y="216" width="756" height="274" rx="14" fill="#EDF2F5" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="243" font-size="22" font-weight="500" fill="#232F3E">5  身份层</text>
-    <rect x="100" y="256" width="720" height="228" rx="14" fill="#FFF3E0" stroke="#FF9900" stroke-width="2.5"/>
-    <text x="460" y="283" font-size="22" font-weight="700" fill="#C75F00">4  网络与出口层</text>
-    <rect x="118" y="296" width="684" height="182" rx="14" fill="#E8EEF2" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="323" font-size="22" font-weight="500" fill="#232F3E">3  会话与运行时层</text>
-    <rect x="136" y="336" width="648" height="136" rx="14" fill="#E3EBF0" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="363" font-size="22" font-weight="500" fill="#232F3E">2  模型与编排层</text>
-    <rect x="154" y="376" width="612" height="90" rx="14" fill="#DDE7EE" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="460" y="403" font-size="22" font-weight="500" fill="#232F3E">1  输入与内容层</text>
-    <rect x="172" y="416" width="576" height="42" rx="10" fill="#232F3E"/>
-    <text x="460" y="444" font-size="23" font-weight="700" fill="#FFFFFF">Agent 核心逻辑</text>
+    <text x="420" y="34" font-size="24" font-weight="700" fill="#232F3E">洋葱模型：多层嵌套、任一层失效都不致命</text>
+    <text x="420" y="59" font-size="14" fill="#5F6B7A">零信任贯穿每一层 · 越靠外越接近攻击者，越靠内越接近核心逻辑</text>
+    <rect x="24" y="80" width="792" height="328" rx="12" fill="#F8FAFB" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="102" font-size="16" font-weight="400" fill="#232F3E">8  审计与治理层</text>
+    <rect x="38" y="111" width="764" height="292" rx="12" fill="#F5F8FA" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="133" font-size="16" font-weight="400" fill="#232F3E">7  凭证与下游访问层</text>
+    <rect x="52" y="142" width="736" height="256" rx="12" fill="#F1F5F7" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="164" font-size="16" font-weight="400" fill="#232F3E">6  工具授权层</text>
+    <rect x="66" y="173" width="708" height="220" rx="12" fill="#EDF2F5" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="195" font-size="16" font-weight="400" fill="#232F3E">5  身份层</text>
+    <rect x="80" y="204" width="680" height="184" rx="12" fill="#EBF0F3" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="226" font-size="16" font-weight="400" fill="#232F3E">4  网络与出口层</text>
+    <rect x="94" y="235" width="652" height="148" rx="12" fill="#FFF3E0" stroke="#FF9900" stroke-width="2.5"/>
+    <text x="420" y="257" font-size="16" font-weight="700" fill="#C75F00">3  会话与运行时层</text>
+    <rect x="108" y="266" width="624" height="112" rx="12" fill="#E3EBF0" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="288" font-size="16" font-weight="400" fill="#232F3E">2  模型与编排层</text>
+    <rect x="122" y="297" width="596" height="76" rx="12" fill="#DDE7EE" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="319" font-size="16" font-weight="400" fill="#232F3E">1  输入与内容层</text>
+    <rect x="136" y="328" width="568" height="36" rx="9" fill="#232F3E"/>
+    <text x="420" y="352" font-size="18" font-weight="700" fill="#FFFFFF">Agent 核心逻辑</text>
   </g>
 </svg>
