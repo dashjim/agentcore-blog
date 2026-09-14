@@ -250,9 +250,20 @@ permit (
 
 ### 4.5 第五步：下游长期凭证留在 Credential Provider 一侧
 
-最后一环是凭证。Cedar 放行后，是 **Gateway** 去调用真正的 Lambda、REST API 或 MCP Server，它通过 **Credential Provider** 以每个目标各自要求的方式（IAM 角色、OAuth、API Key）完成认证；这些下游长期凭证由 AgentCore 受控存储、获取和轮换，**始终不进入 Agent 的运行环境**。
+最后一环是凭证。Cedar 放行后，真正去调用下游（Lambda、REST API、MCP Server，或 EKS 这类基础设施）的是 **Gateway**，不是 Agent。Gateway 通过 **Credential Provider** 以每个目标各自要求的方式（IAM 角色、OAuth、API Key）完成认证；这些下游长期凭证由 AgentCore 受控存储、获取和轮换，**始终不进入 Agent 的运行环境**。
 
-这样一来，凭证泄露的爆炸半径就被限制在"受控组件 + 特定目标"，不再覆盖整个 Agent 运行环境。开篇那次越界中，一次读取就拿到上百项长期密钥，缺的正是这一层。三个身份域由此清晰分开：
+这一点最容易被现有系统的惯性做法带偏，值得展开对比。
+
+**常见做法：长期密钥放 Secrets Manager，Agent 自己去取。** 很多团队的第一直觉是——把下游需要的长期凭证（数据库口令、API Key、一份 cluster-admin 的 kubeconfig）塞进 Secrets Manager，再给 Agent 一个 `secretsmanager:GetSecretValue` 权限，让它运行时自取自用。问题在于：Secrets Manager 只解决了"密钥不硬编码在代码里"，但**取出来的那一刻，长期凭证就被物化进了 Agent 的运行环境**——落在内存里，可能还进了日志和堆栈。而 Agent 跑的正是最不可信的那类代码（见 2.1）：一次成功的提示注入或代码执行，就能把这份长期凭证读走、外传，之后在任何时间、任何地点复用。开篇那次越界里"一次读取拿到含 136 项密钥的 Secret"，正是这种"密钥集中存放 + Agent 有读权限"模式的必然结果。
+
+**推荐做法：凭证不进 Agent，由受控组件代持。** Credential Provider 并不是"不再用密钥存储"——它底层同样可以有托管存储；真正的差别在**谁来读、在哪里物化**：读取与使用都发生在 Gateway / Credential Provider 这个受控边界内，Agent 全程只拿到工具调用的**结果**，从不接触凭证本身。即便 Agent 被完全攻陷，它能做的也只是发起 Cedar 允许的那几个工具调用，拿不到一份可以离线复用的长期凭证。
+
+用**"Agent 操控 EKS"**把这个差别说透——同样是"Agent 需要一个能操作集群的凭证"，两种设计里这份凭证存在完全不同的位置：
+
+- **反模式**：把一份 cluster-admin 的 kubeconfig / 长期 token 存进 Secrets Manager，Agent 取出后直连 EKS API。凭证物化在 Agent 进程里，权限是整个集群的 admin，且长期有效——Agent 一旦失守，攻击者拿到的就是"随时可用的集群最高权限"，正是开篇攻击链里"拿到两个集群 cluster-admin"的那一步。
+- **推荐**：把 EKS 操作封装成 Gateway 后面的工具（如一个 Lambda / MCP target，只暴露 `list_pods`、`restart_deployment` 这类具体动作）。Gateway 侧通过 Credential Provider 假设一个**窄权限 IAM 角色**，该角色再经 EKS 的 access entry / aws-auth 映射到一个**受限的 Kubernetes RBAC 角色**（比如只允许某个 namespace 的只读操作）。这里根本**没有需要长期保管的密钥**——用的是 STS 现签的短期凭证；Agent 手里既没有 kubeconfig 也没有 token，只有一次工具调用的返回值。要不要放行这次操作，仍由 Cedar 按用户身份与参数判定。
+
+两种做法的本质差别，是**凭证的爆炸半径**：反模式下，泄露一份密钥＝丢掉它能触达的一切、且长期有效；推荐做法下，即便 Agent 环境被攻破，爆炸半径也被压在"受控组件 + 这一个目标 + 这次短期凭证"之内。开篇那次越界之所以能一路放大到 cluster-admin，缺的正是这一层。三个身份域由此清晰分开：
 
 ![三个身份域清晰分离：Agent 只当信使，不持长期凭证](images/04-identity-domains.png)
 
