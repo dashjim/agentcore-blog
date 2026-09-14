@@ -233,7 +233,7 @@ def handler(payload, context: RequestContext):
     return agent(payload.get("prompt"))
 ```
 
-这里要对透传模型的安全前提**如实说明**，不夸大。透传意味着 Agent 在单次请求内**确实持有一个短期用户令牌**——所以它的安全性建立在这样一组约束上：令牌短时有效、限定 audience 与 scope、不落盘、不写日志、不写入记忆或追踪属性、缺失即 `fail closed`。它不是"Agent 完全不碰凭证"，而是"Agent 只在请求生命周期内受控地持有短期身份令牌，且从不持有长期静态凭证"。
+透传意味着 Agent 在单次请求内**确实持有一个短期用户令牌**——所以它的安全性建立在这样一组约束上：令牌短时有效、限定 audience 与 scope、不落盘、不写日志、不写入记忆或追踪属性、缺失即 `fail closed`。它不是"Agent 完全不碰凭证"，而是"Agent 只在请求生命周期内受控地持有短期身份令牌，且从不持有长期静态凭证"。
 
 代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
 
