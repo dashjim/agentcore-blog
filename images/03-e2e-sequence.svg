@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1406" height="960" viewBox="0 0 1406 960">
+<rect x="0" y="0" width="1406" height="960" fill="#FFFFFF"/>
+<marker id="ah_or" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#EC7211"/></marker>
+<marker id="ah_rd" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#D13212"/></marker>
+<marker id="ah_gy" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5F6B7A"/></marker>
+<line x1="95" y1="130" x2="95" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="247" y1="130" x2="247" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="399" y1="130" x2="399" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="551" y1="130" x2="551" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="703" y1="130" x2="703" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="855" y1="130" x2="855" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="1007" y1="130" x2="1007" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="1159" y1="130" x2="1159" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line x1="1311" y1="130" x2="1311" y2="936" stroke="#AAB7B8" stroke-width="1.2" stroke-dasharray="5 5"/>
+<rect x="29.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="95.0" y="109.9" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">用户</text>
+<rect x="181.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="247.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Cognito</text>
+<text x="247.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">企业 IdP</text>
+<rect x="333.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="399.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Web / App</text>
+<text x="399.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">客户端</text>
+<rect x="485.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="551.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">AgentCore</text>
+<text x="551.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Runtime</text>
+<rect x="637.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="703.0" y="109.9" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Agent</text>
+<rect x="789.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="855.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">AgentCore</text>
+<text x="855.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Gateway</text>
+<rect x="941.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="1007.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Policy</text>
+<text x="1007.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">(Cedar)</text>
+<rect x="1093.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="1159.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Credential</text>
+<text x="1159.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Provider</text>
+<rect x="1245.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
+<text x="1311.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">API / Lambda</text>
+<text x="1311.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">MCP 工具</text>
+<line x1="99" y1="170" x2="239" y2="170" stroke="#5F6B7A" stroke-width="2" marker-end="url(#ah_gy)"/>
+<text x="171.0" y="162.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">① 登录</text>
+<line x1="251" y1="216" x2="391" y2="216" stroke="#5F6B7A" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_gy)"/>
+<text x="323.0" y="208.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">② 签发含业务 Claims 的短期 JWT</text>
+<line x1="403" y1="262" x2="543" y2="262" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<text x="475.0" y="254.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="middle">③ Authorization: Bearer &lt;user-JWT&gt;</text>
+<text x="565" y="302" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="start">④ 原生 Inbound Auth：验证签名 / 有效期 / audience</text>
+<path d="M551,312 h44 v22 h-44" fill="none" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<line x1="555" y1="384" x2="695" y2="384" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<text x="627.0" y="376.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="middle">⑤ 进入 handler，从 RequestContext 取出 Bearer</text>
+<line x1="707" y1="430" x2="847" y2="430" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<text x="779.0" y="422.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="middle">⑥ MCP 调用 ＋ 原样透传用户 JWT</text>
+<text x="869" y="470" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="start">⑦ 独立再次验证 JWT，映射 claims 为 Cedar 属性</text>
+<path d="M855,480 h44 v22 h-44" fill="none" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<line x1="859" y1="552" x2="999" y2="552" stroke="#5F6B7A" stroke-width="2" marker-end="url(#ah_gy)"/>
+<text x="931.0" y="544.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑧ principal ＋ action ＋ resource ＋ context</text>
+<line x1="1003" y1="598" x2="863" y2="598" stroke="#D13212" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_rd)"/>
+<text x="931.0" y="590.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#D13212" text-anchor="middle">⑨ PERMIT / DENY</text>
+<line x1="859" y1="644" x2="1151" y2="644" stroke="#5F6B7A" stroke-width="2" marker-end="url(#ah_gy)"/>
+<text x="1007.0" y="636.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑩ 取目标所需的出站凭证</text>
+<line x1="1155" y1="690" x2="863" y2="690" stroke="#5F6B7A" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_gy)"/>
+<text x="1007.0" y="682.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑪ IAM / OAuth / API 凭证</text>
+<line x1="859" y1="736" x2="1303" y2="736" stroke="#5F6B7A" stroke-width="2" marker-end="url(#ah_gy)"/>
+<text x="1083.0" y="728.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑫ 以目标要求的身份调用工具</text>
+<line x1="1307" y1="782" x2="863" y2="782" stroke="#5F6B7A" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_gy)"/>
+<text x="1083.0" y="774.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑬ 结果</text>
+<line x1="851" y1="828" x2="711" y2="828" stroke="#5F6B7A" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_gy)"/>
+<text x="779.0" y="820.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑭ 结果</text>
+<line x1="699" y1="874" x2="407" y2="874" stroke="#5F6B7A" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah_gy)"/>
+<text x="551.0" y="866.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">⑮ Agent 响应</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1322" height="724" viewBox="0 0 1322 724">
+<rect x="0" y="0" width="1322" height="724" fill="#FFFFFF"/>
+<marker id="ah_or" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#EC7211"/></marker>
+<marker id="ah_rd" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#D13212"/></marker>
+<marker id="ah_gy" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5F6B7A"/></marker>
+<text x="661.0" y="42" font-family="Noto Sans CJK SC, sans-serif" font-size="24" font-weight="bold" fill="#232F3E" text-anchor="middle">洋葱模型：多层嵌套、任一层失效都不致命</text>
+<text x="661.0" y="70" font-family="Noto Sans CJK SC, sans-serif" font-size="14" fill="#5F6B7A" text-anchor="middle">零信任贯穿每一层 · 越靠外越接近攻击者，越靠内越接近核心逻辑</text>
+<rect x="45.0" y="96.0" width="1232.0" height="594.0" rx="22" ry="22" fill="#F8FAFA" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="120.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">8  审计与治理层</text>
+<rect x="107.0" y="129.0" width="1108.0" height="528.0" rx="22" ry="22" fill="#F6F8F8" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="153.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">7  凭证与下游访问层</text>
+<rect x="169.0" y="162.0" width="984.0" height="462.0" rx="22" ry="22" fill="#F4F7F7" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="186.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">6  工具授权层</text>
+<rect x="231.0" y="195.0" width="860.0" height="396.0" rx="22" ry="22" fill="#F2F5F5" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="219.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">5  身份层</text>
+<rect x="293.0" y="228.0" width="736.0" height="330.0" rx="22" ry="22" fill="#FFF3E0" stroke="#FF9900" stroke-width="2.5"/>
+<text x="661.0" y="252.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#EC7211" text-anchor="middle">4  网络与出口层</text>
+<rect x="355.0" y="261.0" width="612.0" height="264.0" rx="22" ry="22" fill="#EDF1F1" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="285.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">3  会话与运行时层</text>
+<rect x="417.0" y="294.0" width="488.0" height="198.0" rx="22" ry="22" fill="#EAEFEF" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="318.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">2  模型与编排层</text>
+<rect x="479.0" y="327.0" width="364.0" height="132.0" rx="22" ry="22" fill="#E6EBEB" stroke="#AAB7B8" stroke-width="1.2"/>
+<text x="661.0" y="351.0" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">1  输入与内容层</text>
+<rect x="541.0" y="360.0" width="240" height="66" rx="12" ry="12" fill="#232F3E"/>
+<text x="661.0" y="399.3" font-family="Noto Sans CJK SC, sans-serif" font-size="18" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Agent 核心逻辑</text>
+</svg>

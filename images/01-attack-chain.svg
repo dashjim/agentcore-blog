@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="228" viewBox="0 0 1340 228">
+<rect x="0" y="0" width="1340" height="228" fill="#FFFFFF"/>
+<marker id="ah_or" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#EC7211"/></marker>
+<marker id="ah_rd" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#D13212"/></marker>
+<marker id="ah_gy" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5F6B7A"/></marker>
+<text x="670.0" y="42" font-family="Noto Sans CJK SC, sans-serif" font-size="24" font-weight="bold" fill="#232F3E" text-anchor="middle">自动化攻击链：一次越界如何逐级放大</text>
+<rect x="40" y="108" width="170" height="74" rx="8" ry="8" fill="#FFFFFF" stroke="#AAB7B8" stroke-width="1.5"/>
+<text x="125.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">不可信输入</text>
+<text x="125.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">提示注入</text>
+<circle cx="56" cy="124" r="12" fill="#AAB7B8"/><text x="56" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">1</text>
+<line x1="214.0" y1="145.0" x2="254.0" y2="145.0" stroke="#D13212" stroke-width="2" marker-end="url(#ah_rd)"/>
+<rect x="258" y="108" width="170" height="74" rx="8" ry="8" fill="#FDECEA" stroke="#D13212" stroke-width="2"/>
+<text x="343.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">Agent</text>
+<text x="343.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">生成计划</text>
+<circle cx="274" cy="124" r="12" fill="#D13212"/><text x="274" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">2</text>
+<line x1="432.0" y1="145.0" x2="472.0" y2="145.0" stroke="#D13212" stroke-width="2" marker-end="url(#ah_rd)"/>
+<rect x="476" y="108" width="170" height="74" rx="8" ry="8" fill="#FDECEA" stroke="#D13212" stroke-width="2"/>
+<text x="561.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">调用工具</text>
+<text x="561.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="normal" fill="#16191F" text-anchor="middle">执行代码</text>
+<circle cx="492" cy="124" r="12" fill="#D13212"/><text x="492" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">3</text>
+<line x1="650.0" y1="145.0" x2="690.0" y2="145.0" stroke="#D13212" stroke-width="2" marker-end="url(#ah_rd)"/>
+<rect x="694" y="108" width="170" height="74" rx="8" ry="8" fill="#FBD9D2" stroke="#D13212" stroke-width="2"/>
+<text x="779.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#16191F" text-anchor="middle">利用漏洞</text>
+<text x="779.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#16191F" text-anchor="middle">过度权限</text>
+<circle cx="710" cy="124" r="12" fill="#D13212"/><text x="710" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">4</text>
+<line x1="868.0" y1="145.0" x2="908.0" y2="145.0" stroke="#D13212" stroke-width="2" marker-end="url(#ah_rd)"/>
+<rect x="912" y="108" width="170" height="74" rx="8" ry="8" fill="#F7C4BA" stroke="#D13212" stroke-width="2"/>
+<text x="997.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#D13212" text-anchor="middle">读取凭证</text>
+<text x="997.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#D13212" text-anchor="middle">敏感数据</text>
+<circle cx="928" cy="124" r="12" fill="#D13212"/><text x="928" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">5</text>
+<line x1="1086.0" y1="145.0" x2="1126.0" y2="145.0" stroke="#D13212" stroke-width="2" marker-end="url(#ah_rd)"/>
+<rect x="1130" y="108" width="170" height="74" rx="8" ry="8" fill="#F2AE9F" stroke="#D13212" stroke-width="2"/>
+<text x="1215.0" y="139.8" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#D13212" text-anchor="middle">横向移动</text>
+<text x="1215.0" y="161.4" font-family="Noto Sans CJK SC, sans-serif" font-size="16" font-weight="bold" fill="#D13212" text-anchor="middle">扩大影响</text>
+<circle cx="1146" cy="124" r="12" fill="#D13212"/><text x="1146" y="129" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">6</text>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1418" height="302" viewBox="0 0 1418 302">
+<rect x="0" y="0" width="1418" height="302" fill="#FFFFFF"/>
+<marker id="ah_or" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#EC7211"/></marker>
+<marker id="ah_rd" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#D13212"/></marker>
+<marker id="ah_gy" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5F6B7A"/></marker>
+<text x="709.0" y="42" font-family="Noto Sans CJK SC, sans-serif" font-size="24" font-weight="bold" fill="#232F3E" text-anchor="middle">三个身份域清晰分离：Agent 只当信使，不持长期凭证</text>
+<rect x="40" y="110" width="188" height="96" rx="8" ry="8" fill="#FFF3E0" stroke="#FF9900" stroke-width="2"/>
+<rect x="40" y="110" width="188" height="5" rx="2.5" ry="2.5" fill="#FF9900"/>
+<text x="134.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#16191F" text-anchor="middle">用户身份</text>
+<text x="134.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#16191F" text-anchor="middle">短期 JWT</text>
+<text x="134.0" y="240.0" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#EC7211" text-anchor="middle">① 用户身份域</text>
+<line x1="230.0" y1="158.0" x2="268.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<rect x="270" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
+<text x="364.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Runtime</text>
+<text x="364.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">验证谁可调用 Agent</text>
+<line x1="460.0" y1="158.0" x2="498.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<rect x="500" y="110" width="188" height="96" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1.5"/>
+<text x="594.0" y="143.0" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Agent</text>
+<text x="594.0" y="163.2" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF" text-anchor="middle">信使：透传短期 JWT</text>
+<text x="594.0" y="183.5" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF" text-anchor="middle">不持长期凭证</text>
+<text x="594.0" y="240.0" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#EC7211" text-anchor="middle">② Agent（信使）</text>
+<line x1="690.0" y1="158.0" x2="728.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<rect x="730" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
+<text x="824.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Gateway ＋ Cedar</text>
+<text x="824.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">验证谁可调用哪个工具</text>
+<line x1="920.0" y1="158.0" x2="958.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<rect x="960" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
+<text x="1054.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Credential Provider</text>
+<text x="1054.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">管理下游凭证</text>
+<line x1="1150.0" y1="158.0" x2="1188.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
+<rect x="1190" y="110" width="188" height="96" rx="8" ry="8" fill="#FFF3E0" stroke="#FF9900" stroke-width="2"/>
+<rect x="1190" y="110" width="188" height="5" rx="2.5" ry="2.5" fill="#FF9900"/>
+<text x="1284.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#16191F" text-anchor="middle">目标系统身份</text>
+<text x="1284.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#16191F" text-anchor="middle">IAM / OAuth / API Key</text>
+<text x="1284.0" y="240.0" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#EC7211" text-anchor="middle">③ 目标系统身份域</text>
+</svg>
