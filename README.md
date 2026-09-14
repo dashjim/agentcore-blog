@@ -7,10 +7,10 @@
 ## 目录
 
 - [一、开篇：一场测试如何越过边界](#一开篇一场测试如何越过边界)
-- [二、挑战本质：新能力放大旧风险，容器不是最终边界](#二挑战本质新能力放大旧风险容器不是最终边界)
+- [二、Agent应用面临的安全挑战](#二agent应用面临的安全挑战)
   - [2.1 Agent 不是无状态应用](#21-agent-不是无状态应用)
   - [2.2 容器不是不可突破的最终边界](#22-容器不是不可突破的最终边界)
-- [三、从单点防护到体系化安全](#三从单点防护到体系化安全)
+- [三、建立从单点防护到体系化安全的整套机制](#三建立从单点防护到体系化安全的整套机制)
   - [3.1 洋葱模型：把控制部署在多层嵌套边界上](#31-洋葱模型把控制部署在多层嵌套边界上)
   - [3.2 零信任是贯穿所有层的原则，不是其中一层](#32-零信任是贯穿所有层的原则不是其中一层)
   - [3.3 概念澄清：Authentication 与 Authorization](#33-概念澄清authentication-与-authorization)
@@ -79,7 +79,7 @@
 7. **凭证与下游访问层**——长期凭证由受控组件管理，Agent 只按需拿短期访问能力；
 8. **审计与治理层**——记录用户、会话、模型决策、工具调用、策略结果与下游响应。
 
-第四层——**网络与出口**——常被忽略，却往往是攻击链的放大器。开篇那次越界，最后一步正是"改写 DNS 绕过出口封锁"；许多真实事件的共同短板里也都有"缺失的出口管控"；甚至前面提到的两个内核逃逸漏洞（IPv6 分片、netfilter），本身就出在网络子系统。**能不能出网、只能出到哪里，必须由平台强制，而不是指望 Agent 自觉。**
+第四层——**网络与出口**——常被忽略，却往往是攻击链的放大器。开篇那次越界，最后一步正是"改写 DNS 绕过出口封锁"；许多真实事件的共同短板里也都有"缺失的出口管控"；甚至前面提到的 SCTPhantom 这类内核逃逸漏洞，本身就出在网络子系统。**能不能出网、只能出到哪里，必须由平台强制，而不是指望 Agent 自觉。**
 
 ![洋葱模型：多层嵌套、任一层失效都不致命](images/02-onion-model.png)
 
@@ -96,7 +96,7 @@
 - **认证（Authentication，你是谁）= Identity / OAuth / OIDC / JWT。** AgentCore Identity 的 inbound auth（JWT Authorizer）在边界验证调用者的身份。
 - **授权（Authorization，你能做什么）= AgentCore Policy / Cedar。** 它对具体的工具和参数做细粒度、上下文相关、确定性的判断。
 
-**这里第一次出现 Cedar，先简单交代一下。** Cedar 是 AWS 开源的授权策略语言与求值引擎（Amazon Verified Permissions 也基于它）。它把授权表达成一组 `permit` / `forbid` 规则，每条规则针对一个四元组：**principal（谁）、action（做什么动作）、resource（对什么资源）、context（在什么上下文，比如工具参数）**。同样的输入永远得到同样的判定——这种**确定性**，正是它适合用来包住一个非确定性 Agent 的原因。
+**这里第一次出现 Cedar，先简单交代一下。** Cedar 是亚马逊云科技开源的授权策略语言与求值引擎（Amazon Verified Permissions 也基于它）。它把授权表达成一组 `permit` / `forbid` 规则，每条规则针对一个四元组：**principal（谁）、action（做什么动作）、resource（对什么资源）、context（在什么上下文，比如工具参数）**。同样的输入永远得到同样的判定——这种**确定性**，正是它适合用来包住一个非确定性 Agent 的原因。
 
 Cedar 本身只回答"允许吗"，它不拦截任何请求，**要靠 Gateway 来落地**。在 AgentCore 里，Agent 对工具的每一次调用都收敛到 Gateway 这个唯一入口：Gateway 先把已验证的 JWT claims 映射成 Cedar 的 principal 属性，再交给 Policy 引擎评估 principal/action/resource/context，只有结果为 `PERMIT` 才把调用真正转发给工具。换句话说，**Gateway 是执行点（拦截并强制），Cedar 是决策点（只出判定）**——没有 Gateway 这个咽喉，Cedar 的判定就无处强制。（策略具体长什么样，见 4.4。）
 
@@ -113,22 +113,22 @@ Cedar 本身只回答"允许吗"，它不拦截任何请求，**要靠 Gateway �
 
 ## 四、AgentCore 端到端实现：用户身份从登录直达工具授权
 
-第三节讲的是框架——洋葱模型决定控制放在哪些层，零信任决定每层如何决策。但框架不落地，就只是原则。这一节不另起炉灶，而是把前面提出的每一个挑战，逐一对应到 AgentCore 的具体措施上。
+第三节讲的是框架——洋葱模型决定控制放在哪些层，零信任决定每层如何决策。但框架不落地，就只是原则。这一节把八层逐一对应到亚马逊云科技上的实现，再重点展开其中的运行时、身份、工具授权与凭证四层。
 
-先把账对齐。前两节抛出的挑战，在 AgentCore 都有明确的落点：
-
-| 前面提出的挑战 | AgentCore 的对应措施 |
+| 层 | 亚马逊云科技上的实现 |
 | --- | --- |
-| 容器共享内核、不是最终边界（2.2） | Runtime 会话级 microVM / Nitro，各会话独立内核 |
-| Agent 有状态，记忆投毒 / 权限残留（2.1） | 会话结束即销毁实例并清理内存 |
-| 出口失控、改 DNS 绕过封锁（洋葱第 4 层） | 平台层强制的出站管控：默认拒绝、egress 白名单 |
-| "它代表谁"——请求缺可验证身份（身份层） | Runtime 原生 Inbound Auth + AgentCore Identity |
-| "它能调什么工具、用什么参数"（工具授权层） | Gateway + Policy（Cedar）做确定性授权 |
-| 长期凭证被一次读走（凭证层） | Credential Provider 托管，凭证不进 Agent 环境 |
+| 1 输入与内容层 | Amazon Bedrock Guardrails：提示注入检测、内容过滤 |
+| 2 模型与编排层 | Agent 框架（如 Strands Agents）约束工具选择与自主循环；高风险动作交由 AgentCore Policy 强制判定 |
+| 3 会话与运行时层 | AgentCore Runtime：会话级 microVM，结束即销毁、清理内存 |
+| 4 网络与出口层 | AgentCore Runtime 的 VPC 模式 + 安全组 / Network Firewall：默认拒绝出站、白名单 egress |
+| 5 身份层 | AgentCore Identity（Inbound Auth / JWT Authorizer）+ Amazon Cognito 或任意 OIDC IdP |
+| 6 工具授权层 | AgentCore Gateway + AgentCore Policy（Cedar） |
+| 7 凭证与下游访问层 | AgentCore Identity Credential Provider + IAM 角色 / STS 短期凭证 |
+| 8 审计与治理层 | AgentCore Observability（CloudWatch / OpenTelemetry）+ CloudTrail |
 
 设计目标只有一个：**让这几层边界各自独立成立**，任何单层被突破，都不至于让整条攻击链贯通。下面按"先隔离、再身份、后授权与凭证"的顺序，把它们逐一走一遍。
 
-先看运行隔离——它正面回答了 2.2 节留下的问题：**容器既然不是最终边界，AgentCore Runtime 靠什么兜底？** 答案是不共享内核。Runtime 把每个会话放进独立的 microVM / Nitro 实例，各自拥有独立内核，而不是像普通容器那样与宿主机共享同一个内核。于是 2.2 节里那些"共享内核逃逸面"——runc 挂载竞态、SCTPhantom 这类内核漏洞——即便在某个会话内被触发，能触及的也只是这个会话自己的 microVM：横向摸不到宿主机，更摸不到其他用户的会话。会话一旦结束，实例连同内存一并销毁，不给记忆投毒和权限残留留下载体——这也正面接住了 2.1 节"Agent 有状态"带来的隔离难题。**普通容器做不到的"结束即清零"，AgentCore 用架构手段做到了。**
+先看运行隔离——它正面回答 2.2 节留下的问题：**容器不是最终边界，AgentCore Runtime 靠什么兜底？** 答案是不共享内核。Runtime 给每个会话一台独立的 microVM，各有自己的内核。这样一来，2.2 节那些逃逸漏洞即便被触发，影响也只限于这一个会话的 microVM，碰不到宿主机，也碰不到其他用户。会话结束时，整台 microVM 连同内存一起销毁，上一段对话不会留下任何痕迹——2.1 节担心的记忆投毒和权限残留也就无处落脚。
 
 隔离只解决"能不能碰到邻居"，回答不了"你代表谁、能调用哪些工具"。这就要靠下面这条**可验证的身份链**：用户登录得到的 JWT，经边界验证后一路透传，由每一跳独立验证、由 Cedar 基于真实用户属性授权。Agent 在这条链里只是"信使"——它不做身份判断，也不嵌入任何长期静态凭证。
 
@@ -274,7 +274,7 @@ permit (
 用**"Agent 操控 EKS"**把这个差别说透——同样是"Agent 需要一个能操作集群的凭证"，两种设计里这份凭证存在完全不同的位置：
 
 - **反模式**：把一份 cluster-admin 的 kubeconfig / 长期 token 存进 Secrets Manager，Agent 取出后直连 EKS API。凭证物化在 Agent 进程里，权限是整个集群的 admin，且长期有效——Agent 一旦失守，攻击者拿到的就是"随时可用的集群最高权限"，正是开篇攻击链里"拿到两个集群 cluster-admin"的那一步。
-- **推荐**：把 EKS 操作封装成 Gateway 后面的工具（如一个 Lambda / MCP target，只暴露 `list_pods`、`restart_deployment` 这类具体动作）。Gateway 侧通过 Credential Provider 假设一个**窄权限 IAM 角色**，该角色再经 EKS 的 access entry / aws-auth 映射到一个**受限的 Kubernetes RBAC 角色**（比如只允许某个 namespace 的只读操作）。这里根本**没有需要长期保管的密钥**——用的是 STS 现签的短期凭证；Agent 手里既没有 kubeconfig 也没有 token，只有一次工具调用的返回值。要不要放行这次操作，仍由 Cedar 按用户身份与参数判定。
+- **推荐**：把 EKS 操作封装成 Gateway 后面的工具（如一个 Lambda / MCP target，只暴露 `list_pods`、`restart_deployment` 这类具体动作）。Gateway 侧通过 Credential Provider 假设一个**窄权限 IAM 角色**，该角色再经 EKS 的 access entry 映射到一个**受限的 Kubernetes RBAC 角色**（比如只允许某个 namespace 的只读操作）。这里根本**没有需要长期保管的密钥**——用的是 STS 现签的短期凭证；Agent 手里既没有 kubeconfig 也没有 token，只有一次工具调用的返回值。要不要放行这次操作，仍由 Cedar 按用户身份与参数判定。
 
 两种做法的本质差别，是**凭证的爆炸半径**：反模式下，泄露一份密钥＝丢掉它能触达的一切、且长期有效；推荐做法下，即便 Agent 环境被攻破，爆炸半径也被压在"受控组件 + 这一个目标 + 这次短期凭证"之内。开篇那次越界之所以能一路放大到 cluster-admin，缺的正是这一层。三个身份域由此清晰分开：
 
