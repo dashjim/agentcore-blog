@@ -11,7 +11,7 @@
 <text x="134.0" y="240.0" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#EC7211" text-anchor="middle">① 用户身份域</text>
 <line x1="230.0" y1="158.0" x2="268.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <rect x="270" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
-<text x="364.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Runtime</text>
+<text x="364.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">AgentCore Runtime</text>
 <text x="364.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">验证谁可调用 Agent</text>
 <line x1="460.0" y1="158.0" x2="498.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <rect x="500" y="110" width="188" height="96" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1.5"/>
@@ -21,12 +21,14 @@
 <text x="594.0" y="240.0" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#EC7211" text-anchor="middle">② Agent（信使）</text>
 <line x1="690.0" y1="158.0" x2="728.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <rect x="730" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
-<text x="824.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Gateway ＋ Cedar</text>
-<text x="824.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">验证谁可调用哪个工具</text>
+<text x="824.0" y="143.0" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">AgentCore Gateway</text>
+<text x="824.0" y="163.2" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">＋ Cedar</text>
+<text x="824.0" y="183.5" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">验证谁可调用哪个工具</text>
 <line x1="920.0" y1="158.0" x2="958.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <rect x="960" y="110" width="188" height="96" rx="8" ry="8" fill="#F2F3F3" stroke="#AAB7B8" stroke-width="1.5"/>
-<text x="1054.0" y="153.1" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Credential Provider</text>
-<text x="1054.0" y="173.4" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">管理下游凭证</text>
+<text x="1054.0" y="143.0" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">AgentCore Identity</text>
+<text x="1054.0" y="163.2" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">Credential Provider</text>
+<text x="1054.0" y="183.5" font-family="Noto Sans CJK SC, sans-serif" font-size="15" font-weight="normal" fill="#16191F" text-anchor="middle">管理下游凭证</text>
 <line x1="1150.0" y1="158.0" x2="1188.0" y2="158.0" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <rect x="1190" y="110" width="188" height="96" rx="8" ry="8" fill="#FFF3E0" stroke="#FF9900" stroke-width="2"/>
 <rect x="1190" y="110" width="188" height="5" rx="2.5" ry="2.5" fill="#FF9900"/>

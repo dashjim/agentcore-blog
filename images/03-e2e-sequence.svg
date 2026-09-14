@@ -29,11 +29,11 @@
 <text x="855.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">AgentCore</text>
 <text x="855.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Gateway</text>
 <rect x="941.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
-<text x="1007.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Policy</text>
+<text x="1007.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">AgentCore Policy</text>
 <text x="1007.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">(Cedar)</text>
 <rect x="1093.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
-<text x="1159.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Credential</text>
-<text x="1159.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Provider</text>
+<text x="1159.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">AgentCore Identity</text>
+<text x="1159.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Credential Provider</text>
 <rect x="1245.0" y="80" width="132" height="50" rx="8" ry="8" fill="#232F3E" stroke="#232F3E" stroke-width="1"/>
 <text x="1311.0" y="100.5" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">API / Lambda</text>
 <text x="1311.0" y="119.4" font-family="Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">MCP 工具</text>
