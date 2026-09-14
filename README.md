@@ -237,6 +237,8 @@ def handler(payload, context: RequestContext):
 
 代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
 
+在当前实现中，Agent 应用仍会在运行环境中读取并转发用户的原始 JWT。AgentCore Identity 新增的 **On-Behalf-Of（OBO）Token Exchange** 提供了另一种方式：Agent 应用使用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 负责与支持 OBO 的授权服务器完成交换，由授权服务器按授权策略签发限定下游 audience 和 scope 的访问令牌。Agent 应用因此无需读取或透传原始用户 JWT，也无需管理换票所需的客户端密钥，但仍会在调用下游时使用换取的访问令牌。开发者接入 OBO 时，还需配置相应的授权服务器，让 AgentCore Gateway 验证新令牌，并由授权服务器在新令牌中提供工具授权所需的可信业务 claims。详见 [AgentCore Identity OBO Token Exchange 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html)。
+
 ### 4.4 第四步：AgentCore Gateway 再次验证，Cedar 决定工具权限
 
 请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和预期 audience，然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
