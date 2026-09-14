@@ -106,20 +106,6 @@ Cedar 是亚马逊云科技开源的授权策略语言与求值引擎（Amazon V
 
 Cedar 只作授权判定，不拦截请求；AgentCore Gateway 负责执行这一判定。在本文设计中，Agent 通过 AgentCore Gateway 这个唯一入口调用工具：AgentCore Gateway 先把已验证的 JWT claims 映射成 Cedar 的 principal 属性，再交给 AgentCore Policy 引擎评估 principal/action/resource/context，只有结果为 `PERMIT` 才把调用真正转发给工具。**AgentCore Gateway 是执行点（拦截并强制），Cedar 是决策点（只出判定）**。在这条调用链中，AgentCore Gateway 强制执行 Cedar 的授权判定。（具体策略见 4.4。）
 
-Cedar 策略示例：
-
-```
-permit (
-    principal,
-    action == AgentCore::Action::"AirlineToolsTarget___waive_change_fee",
-    resource == AgentCore::Gateway::"<gateway-arn>"
-) when {
-    principal.getTag("loyalty_tier") in ["gold", "platinum"]
-};
-```
-
-这条 Cedar 策略允许 **gold 或 platinum 会员调用 `waive_change_fee`（豁免改签费）这个工具**。AgentCore Gateway 验证 JWT 后，把其中包括 `loyalty_tier` 在内的 claims 填进 `principal` 的属性；Cedar 只拿这份已验证的属性做判断，判断结果由 AgentCore Gateway 执行：`PERMIT` 才转发给工具，否则直接拒绝。认证负责"你是谁、有什么属性"，授权负责"凭这些属性能不能做这件事"，两步缺一不可。
-
 这里还有两点需要说明。其一，OAuth 的 **scope** 本身就是一种粗粒度授权，所以 OAuth 并非"纯认证"；准确的分工是：**OAuth 负责身份 + 粗粒度 scope，Cedar 负责细粒度、带上下文、确定性的授权**。其二，AgentCore Identity 除了认证，还兼管"出站凭证代理"（AgentCore Identity 的 Credential Provider）。这部分属于凭证管理。"AgentCore Identity = 认证"是个有用的简化，但不是它的全部职责。
 
 ---
