@@ -100,12 +100,19 @@
 
 Cedar 本身只回答"允许吗"，它不拦截任何请求，**要靠 Gateway 来落地**。在 AgentCore 里，Agent 对工具的每一次调用都收敛到 Gateway 这个唯一入口：Gateway 先把已验证的 JWT claims 映射成 Cedar 的 principal 属性，再交给 Policy 引擎评估 principal/action/resource/context，只有结果为 `PERMIT` 才把调用真正转发给工具。换句话说，**Gateway 是执行点（拦截并强制），Cedar 是决策点（只出判定）**——没有 Gateway 这个咽喉，Cedar 的判定就无处强制。（策略具体长什么样，见 4.4。）
 
-用一个最小的例子看认证与授权如何**互补**：调用者带着 JWT 进来，认证环节确认"这是张三、会员等级 gold"（**你是谁**）；随后 Cedar 判断"张三能不能调用 `waive_change_fee` 来豁免改签费"（**你能做什么**）。两者缺一不可——
+看一条最小的策略就够了：
 
-- **只有认证、没有授权**：系统知道来的是 gold 会员张三，却没有规则界定他能做哪些操作，只能要么全放行、要么全拒绝，做不到"gold 可免、basic 不可免"这种精细控制。
-- **只有授权、没有认证**：规则写着"gold 会员可豁免"，但没有可信来源证明调用者真是 gold——principal 属性可以随意伪造，规则形同虚设。
+```
+permit (
+    principal,
+    action == AgentCore::Action::"AirlineToolsTarget___waive_change_fee",
+    resource == AgentCore::Gateway::"<gateway-arn>"
+) when {
+    principal.getTag("loyalty_tier") in ["gold", "platinum"]
+};
+```
 
-所以认证提供**可信的"身份 + 属性"**，授权在其之上判断**"这件事到底能不能做"**；Cedar 的决策，只和喂给它的那份已认证 claims 一样可信。
+它只说了一件事：**gold 或 platinum 会员，可以调用 `waive_change_fee`（豁免改签费）这个工具。** `loyalty_tier` 从哪来？来自认证——Gateway 验证完 JWT 后，把其中的 claims 填进 `principal` 的属性；Cedar 只拿这份已验证的属性做判断，判断结果由 Gateway 执行：`PERMIT` 才转发给工具，否则直接拒绝。认证负责"你是谁、有什么属性"，授权负责"凭这些属性能不能做这件事"，两步缺一不可。
 
 这里还有两点需要说明。其一，OAuth 的 **scope** 本身就是一种粗粒度授权，所以 OAuth 并非"纯认证"；准确的分工是：**OAuth 负责身份 + 粗粒度 scope，Cedar 负责细粒度、带上下文、确定性的授权**。其二，AgentCore Identity 除了认证，还兼管"出站凭证代理"（Credential Provider）。这部分属于凭证管理。"Identity = 认证"是个有用的简化，但不是它的全部职责。
 
