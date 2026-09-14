@@ -21,6 +21,7 @@
   - [4.4 第四步：AgentCore Gateway 再次验证，Cedar 决定工具权限](#44-第四步agentcore-gateway-再次验证cedar-决定工具权限)
   - [4.5 第五步：下游长期凭证留在 AgentCore Identity 的 Credential Provider 一侧](#45-第五步下游长期凭证留在-agentcore-identity-的-credential-provider-一侧)
 - [五、结尾：非确定性系统需要确定性边界](#五结尾非确定性系统需要确定性边界)
+- [六、参考文档](#六参考文档)
 
 ---
 
@@ -60,7 +61,7 @@ Agent 构建者需要认识到，Agent 在决策方式、执行能力和状态�
 
 补丁、seccomp、AppArmor/SELinux、只读文件系统、能力裁剪、网络策略当然仍然必要，它们能显著降低逃逸的概率和影响。但它们无法从架构上抹掉"共享内核"这层边界。
 
-[AgentCore Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html) 是专为 Agent 和工具设计的托管运行环境；本文采用其 microVM 模式，为 Agent 提供按会话（Session）隔离的执行沙箱。AgentCore Runtime 为每个会话分配独立的 microVM，隔离 CPU、内存和文件系统，并在会话终止时销毁该 microVM、清理内存。
+AgentCore Runtime 是专为 Agent 和工具设计的托管运行环境；本文采用其 microVM 模式，为 Agent 提供按会话（Session）隔离的执行沙箱。AgentCore Runtime 为每个会话分配独立的 microVM，隔离 CPU、内存和文件系统，并在会话终止时销毁该 microVM、清理内存。
 
 不过，隔离强度只能回答一个问题："这段不可信代码能不能碰到邻居。"它回答不了"它代表谁""能调用什么工具""能用哪些参数""凭证放在哪里"。这些，需要一套覆盖完整调用链的体系化设计。
 
@@ -91,7 +92,7 @@ Agent 构建者需要认识到，Agent 在决策方式、执行能力和状态�
 
 **零信任**贯穿所有控制层。洋葱模型决定控制部署在哪些位置，零信任决定每一层如何作出访问决策。
 
-[AgentCore Gateway](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html) 是面向 Agent 的托管 AI 网关，本文用它将 API、Lambda 函数和已有 MCP Server 中的工具汇聚为统一的 MCP 入口，供 Agent 发现和调用。AgentCore Gateway 按配置验证调用者身份、处理下游认证，并将获准的工具请求转发给对应目标。
+AgentCore Gateway 是面向 Agent 的托管 AI 网关，本文用它将 API、Lambda 函数和已有 MCP Server 中的工具汇聚为统一的 MCP 入口，供 Agent 发现和调用。AgentCore Gateway 按配置验证调用者身份、处理下游认证，并将获准的工具请求转发给对应目标。
 
 具体到 Agent：不因为请求来自内网、来自 AgentCore Runtime 或来自另一个 Agent 就默认可信；AgentCore Runtime 与 AgentCore Gateway 各自独立验证身份，不共享隐式信任；每一次工具调用都基于"谁、做什么、对什么资源、在什么上下文"重新授权；默认拒绝，身份缺失或传播失败时**fail closed**，绝不静默降级为权限更大的机器身份；令牌一律短期、最小权限、限定 audience 与 scope。
 
@@ -100,7 +101,7 @@ Agent 构建者需要认识到，Agent 在决策方式、执行能力和状态�
 体系化设计里有两个经常被混用的概念，它们分别对应 AgentCore 的不同组件：
 
 - **认证（Authentication，你是谁）= AgentCore Identity / OAuth / OIDC / JWT。** AgentCore Identity 的 inbound auth（JWT Authorizer）在边界验证调用者的身份。
-- **授权（Authorization，你能做什么）= AgentCore Policy / Cedar。** [AgentCore Policy](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html) 是面向 Agent 工具调用的细粒度授权服务，可使用 Cedar 策略对调用者、工具、资源及上下文作出确定性判断。AgentCore Gateway 接入 AgentCore Policy 并启用强制执行模式后，会按判定放行或拒绝工具调用。
+- **授权（Authorization，你能做什么）= AgentCore Policy / Cedar。** AgentCore Policy 是面向 Agent 工具调用的细粒度授权服务，可使用 Cedar 策略对调用者、工具、资源及上下文作出确定性判断。AgentCore Gateway 接入 AgentCore Policy 并启用强制执行模式后，会按判定放行或拒绝工具调用。
 
 Cedar 是亚马逊云科技开源的授权策略语言与求值引擎（Amazon Verified Permissions 也基于它）。它把授权表达成一组 `permit` / `forbid` 规则，每条规则针对一个四元组：**principal（谁）、action（做什么动作）、resource（对什么资源）、context（在什么上下文，比如工具参数）**。Cedar 对同样的输入始终给出同样的判定，因此适合为非确定性的 Agent 提供确定性的授权判断。
 
@@ -223,7 +224,7 @@ def handler(payload, context: RequestContext):
 
 代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
 
-在当前实现中，Agent 应用仍会在运行环境中读取并转发用户的原始 JWT。AgentCore Identity 新增的 **On-Behalf-Of（OBO）Token Exchange** 提供了另一种方式：Agent 应用使用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 负责与支持 OBO 的授权服务器完成交换，由授权服务器按授权策略签发限定下游 audience 和 scope 的访问令牌。Agent 应用因此无需读取或透传原始用户 JWT，也无需管理换票所需的客户端密钥，但仍会在调用下游时使用换取的访问令牌。开发者接入 OBO 时，还需配置相应的授权服务器，让 AgentCore Gateway 验证新令牌，并由授权服务器在新令牌中提供工具授权所需的可信业务 claims。详见 [AgentCore Identity OBO Token Exchange 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html)。
+在当前实现中，Agent 应用仍会在运行环境中读取并转发用户的原始 JWT。AgentCore Identity 新增的 **On-Behalf-Of（OBO）Token Exchange** 提供了另一种方式：Agent 应用使用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 负责与支持 OBO 的授权服务器完成交换，由授权服务器按授权策略签发限定下游 audience 和 scope 的访问令牌。Agent 应用因此无需读取或透传原始用户 JWT，也无需管理换票所需的客户端密钥，但仍会在调用下游时使用换取的访问令牌。开发者接入 OBO 时，还需配置相应的授权服务器，让 AgentCore Gateway 验证新令牌，并由授权服务器在新令牌中提供工具授权所需的可信业务 claims。
 
 ### 4.4 第四步：AgentCore Gateway 再次验证，Cedar 决定工具权限
 
@@ -294,3 +295,12 @@ permit (
 5. 覆盖全调用链的审计、检测与撤销。
 
 > 模型负责处理不确定性，安全架构负责限制不确定性的影响范围。只有当身份、权限、凭证和运行边界都独立成立时，Agent 的自主能力才可能被安全地交付到生产环境。
+
+---
+
+## 六、参考文档
+
+1. [AgentCore Runtime 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html)
+2. [AgentCore Gateway 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html)
+3. [AgentCore Policy 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html)
+4. [AgentCore Identity OBO Token Exchange 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html)
