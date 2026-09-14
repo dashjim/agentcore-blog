@@ -230,6 +230,8 @@ def handler(payload, context: RequestContext):
 
 请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和预期 audience，然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
 
+本例中，Agent 应用应使用当前用户的 JWT 调用 AgentCore Gateway，不应改用共享 Service Role（服务角色）的身份。若应用仅以服务角色身份发起调用，AgentCore Gateway 就无法从该身份中获得当前用户的 `loyalty_tier` 等业务 claims，AgentCore Policy 也就无法据此执行本文的用户级授权。AgentCore Runtime 运行 Agent、AgentCore Gateway 访问下游资源仍可使用各自所需的 IAM 角色，但这些角色的权限不能代替用户的工具权限。
+
 第一条策略基于**用户属性**：只有 `gold` 或 `platinum` 会员才能豁免改签费。
 
 ```
