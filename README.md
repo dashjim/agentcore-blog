@@ -66,9 +66,9 @@
 
 ### 3.1 洋葱模型：把控制部署在多层嵌套边界上
 
-谈到安全的话题，我们仍然要遵从“不发明安全算法”的约束，而应该是基于久经考验的安全框架来设计Agent时代的安全体系。
+我们仍然要遵从“不发明安全算法”的约束，基于久经考验的安全框架设计 Agent 时代的安全体系。
 
-这里我们建议Agent的体系化安全可以基于**洋葱模型**：把彼此独立的安全控制放在多层相互嵌套的边界上，任何单层失效都不应直接导致整个系统失守。它是一种设计结构，不依赖单一产品。用于 Agent，可以分成八层：
+我们建议基于**洋葱模型**设计 Agent 的安全体系：把彼此独立的安全控制放在多层相互嵌套的边界上，任何单层失效都不应直接导致整个系统失守。它是一种设计结构，不依赖单一产品。用于 Agent，可以分成八层：
 
 1. **输入与内容层**——提示注入检测、内容过滤、不可信数据标记；
 2. **模型与编排层**——限制自主循环、高风险操作二次确认、约束工具选择；
@@ -96,11 +96,11 @@
 - **认证（Authentication，你是谁）= Identity / OAuth / OIDC / JWT。** AgentCore Identity 的 inbound auth（JWT Authorizer）在边界验证调用者的身份。
 - **授权（Authorization，你能做什么）= AgentCore Policy / Cedar。** 它对具体的工具和参数做细粒度、上下文相关、确定性的判断。
 
-**这里第一次出现 Cedar，先简单交代一下。** Cedar 是亚马逊云科技开源的授权策略语言与求值引擎（Amazon Verified Permissions 也基于它）。它把授权表达成一组 `permit` / `forbid` 规则，每条规则针对一个四元组：**principal（谁）、action（做什么动作）、resource（对什么资源）、context（在什么上下文，比如工具参数）**。同样的输入永远得到同样的判定——这种**确定性**，正是它适合用来包住一个非确定性 Agent 的原因。
+Cedar 是亚马逊云科技开源的授权策略语言与求值引擎（Amazon Verified Permissions 也基于它）。它把授权表达成一组 `permit` / `forbid` 规则，每条规则针对一个四元组：**principal（谁）、action（做什么动作）、resource（对什么资源）、context（在什么上下文，比如工具参数）**。Cedar 对同样的输入始终给出同样的判定，因此适合为非确定性的 Agent 提供确定性的授权判断。
 
-Cedar 本身只回答"允许吗"，它不拦截任何请求，**要靠 Gateway 来落地**。在 AgentCore 里，Agent 对工具的每一次调用都收敛到 Gateway 这个唯一入口：Gateway 先把已验证的 JWT claims 映射成 Cedar 的 principal 属性，再交给 Policy 引擎评估 principal/action/resource/context，只有结果为 `PERMIT` 才把调用真正转发给工具。换句话说，**Gateway 是执行点（拦截并强制），Cedar 是决策点（只出判定）**——没有 Gateway 这个咽喉，Cedar 的判定就无处强制。（策略具体长什么样，见 4.4。）
+Cedar 只作授权判定，不拦截请求；Gateway 负责执行这一判定。在本文设计中，Agent 通过 Gateway 这个唯一入口调用工具：Gateway 先把已验证的 JWT claims 映射成 Cedar 的 principal 属性，再交给 Policy 引擎评估 principal/action/resource/context，只有结果为 `PERMIT` 才把调用真正转发给工具。**Gateway 是执行点（拦截并强制），Cedar 是决策点（只出判定）**。在这条调用链中，Gateway 强制执行 Cedar 的授权判定。（具体策略见 4.4。）
 
-看一条最小的策略就够了：
+Cedar 策略示例：
 
 ```
 permit (
@@ -112,7 +112,7 @@ permit (
 };
 ```
 
-它只说了一件事：**gold 或 platinum 会员，可以调用 `waive_change_fee`（豁免改签费）这个工具。** `loyalty_tier` 从哪来？来自认证——Gateway 验证完 JWT 后，把其中的 claims 填进 `principal` 的属性；Cedar 只拿这份已验证的属性做判断，判断结果由 Gateway 执行：`PERMIT` 才转发给工具，否则直接拒绝。认证负责"你是谁、有什么属性"，授权负责"凭这些属性能不能做这件事"，两步缺一不可。
+这条 Cedar 策略允许 **gold 或 platinum 会员调用 `waive_change_fee`（豁免改签费）这个工具**。Gateway 验证 JWT 后，把其中包括 `loyalty_tier` 在内的 claims 填进 `principal` 的属性；Cedar 只拿这份已验证的属性做判断，判断结果由 Gateway 执行：`PERMIT` 才转发给工具，否则直接拒绝。认证负责"你是谁、有什么属性"，授权负责"凭这些属性能不能做这件事"，两步缺一不可。
 
 这里还有两点需要说明。其一，OAuth 的 **scope** 本身就是一种粗粒度授权，所以 OAuth 并非"纯认证"；准确的分工是：**OAuth 负责身份 + 粗粒度 scope，Cedar 负责细粒度、带上下文、确定性的授权**。其二，AgentCore Identity 除了认证，还兼管"出站凭证代理"（Credential Provider）。这部分属于凭证管理。"Identity = 认证"是个有用的简化，但不是它的全部职责。
 
@@ -135,7 +135,7 @@ permit (
 
 设计目标只有一个：**让这几层边界各自独立成立**，任何单层被突破，都不至于让整条攻击链贯通。下面按"先隔离、再身份、后授权与凭证"的顺序，把它们逐一走一遍。
 
-先看运行隔离——它正面回答 2.2 节留下的问题：**容器不是最终边界，AgentCore Runtime 靠什么兜底？** 答案是不共享内核。Runtime 给每个会话一台独立的 microVM，各有自己的内核。这样一来，2.2 节那些逃逸漏洞即便被触发，影响也只限于这一个会话的 microVM，碰不到宿主机，也碰不到其他用户。会话结束时，整台 microVM 连同内存一起销毁，上一段对话不会留下任何痕迹——2.1 节担心的记忆投毒和权限残留也就无处落脚。
+先看运行隔离——它正面回答 2.2 节留下的问题：**容器不是最终边界，AgentCore Runtime 靠什么兜底？** 答案是不共享内核。Runtime 给每个会话一台独立的 microVM，各有自己的内核。这样一来，2.2 节那些逃逸漏洞即便被触发，影响也只限于这一个会话的 microVM，碰不到宿主机，也碰不到其他用户。会话结束时，AgentCore Runtime 销毁该会话的 microVM 并清理内存。
 
 隔离只解决"能不能碰到邻居"，回答不了"你代表谁、能调用哪些工具"。这就要靠下面这条**可验证的身份链**：用户登录得到的 JWT，经边界验证后一路透传，由每一跳独立验证、由 Cedar 基于真实用户属性授权。Agent 在这条链里只是"信使"——它不做身份判断，也不嵌入任何长期静态凭证。
 
@@ -270,20 +270,18 @@ permit (
 
 ### 4.5 第五步：下游长期凭证留在 Credential Provider 一侧
 
-最后一环是凭证。Cedar 放行后，真正去调用下游（Lambda、REST API、MCP Server，或 EKS 这类基础设施）的是 **Gateway**，不是 Agent。Gateway 通过 **Credential Provider** 以每个目标各自要求的方式（IAM 角色、OAuth、API Key）完成认证；这些下游长期凭证由 AgentCore 受控存储、获取和轮换，**始终不进入 Agent 的运行环境**。
+最后一环是凭证。Cedar 放行后，**Gateway** 负责调用下游（Lambda、REST API、MCP Server，或 EKS 这类基础设施），Agent 不直接调用这些下游。Gateway 通过 **Credential Provider** 以每个目标各自要求的方式（IAM 角色、OAuth、API Key）完成认证；这些下游长期凭证由 AgentCore 受控存储、获取和轮换，**始终不进入 Agent 的运行环境**。
 
-这一点最容易被现有系统的惯性做法带偏，值得展开对比。
+**常见做法：长期密钥放 Secrets Manager，Agent 自己去取。** 很多团队会把下游需要的长期凭证（数据库口令、API Key、一份 cluster-admin 的 kubeconfig）存入 Secrets Manager，再给 Agent 一个 `secretsmanager:GetSecretValue` 权限，让 Agent 在运行时读取和使用这些凭证。团队把密钥存入 Secrets Manager，可以避免在代码中硬编码；但**Agent 取出长期凭证时，就把它读入了自己的运行环境**——落在内存里，可能还进了日志和堆栈。而 Agent 跑的正是最不可信的那类代码（见 2.1）：一次成功的提示注入或代码执行，就能让攻击者把这份长期凭证读走、外传；只要凭证仍然有效且下游接受该凭证，攻击者还可能在 Agent 环境之外复用它。开篇事件中，Agent 一次读取了含 136 项密钥的 Secret。这个例子说明，Agent 能读取集中存放的密钥时，一次越界就可能暴露多份凭证。
 
-**常见做法：长期密钥放 Secrets Manager，Agent 自己去取。** 很多团队的第一直觉是——把下游需要的长期凭证（数据库口令、API Key、一份 cluster-admin 的 kubeconfig）塞进 Secrets Manager，再给 Agent 一个 `secretsmanager:GetSecretValue` 权限，让它运行时自取自用。问题在于：Secrets Manager 只解决了"密钥不硬编码在代码里"，但**取出来的那一刻，长期凭证就被物化进了 Agent 的运行环境**——落在内存里，可能还进了日志和堆栈。而 Agent 跑的正是最不可信的那类代码（见 2.1）：一次成功的提示注入或代码执行，就能把这份长期凭证读走、外传，之后在任何时间、任何地点复用。开篇那次越界里"一次读取拿到含 136 项密钥的 Secret"，正是这种"密钥集中存放 + Agent 有读权限"模式的必然结果。
+**推荐做法：下游凭证不进 Agent，由受控组件代持。** Credential Provider 底层同样可以有托管存储。两种做法的差别在**谁读取凭证、凭证进入哪个运行环境**：读取与使用都发生在 Gateway / Credential Provider 这个受控边界内，Agent 在下游访问环节只拿到工具调用的**结果**，不接触这些下游凭证。在 Agent 只能经 Gateway 访问这些下游工具的前提下，Gateway 仍按 Cedar 的判定限制工具调用，Agent 也无法从本地取得由受控组件保管的下游长期凭证。
 
-**推荐做法：凭证不进 Agent，由受控组件代持。** Credential Provider 并不是"不再用密钥存储"——它底层同样可以有托管存储；真正的差别在**谁来读、在哪里物化**：读取与使用都发生在 Gateway / Credential Provider 这个受控边界内，Agent 全程只拿到工具调用的**结果**，从不接触凭证本身。即便 Agent 被完全攻陷，它能做的也只是发起 Cedar 允许的那几个工具调用，拿不到一份可以离线复用的长期凭证。
+以**"Agent 操控 EKS"**为例：同样是"Agent 需要一个能操作集群的凭证"，两种设计里这份凭证存在完全不同的位置：
 
-用**"Agent 操控 EKS"**把这个差别说透——同样是"Agent 需要一个能操作集群的凭证"，两种设计里这份凭证存在完全不同的位置：
+- **反模式**：把一份 cluster-admin 的 kubeconfig / 长期 token 存进 Secrets Manager，Agent 取出后直连 EKS API。Agent 把凭证读入自己的进程，权限是整个集群的 admin，且长期有效——Agent 一旦失守，攻击者拿到的就是"随时可用的集群最高权限"，正是开篇攻击链里"拿到两个集群 cluster-admin"的那一步。
+- **推荐**：把 EKS 操作封装成 Gateway 后面的工具（如一个 Lambda / MCP target，只暴露 `list_pods`、`restart_deployment` 这类具体动作）。Gateway 侧通过 Credential Provider 假设一个**窄权限 IAM 角色**，该角色再经 EKS 的 access entry 映射到一个**受限的 Kubernetes RBAC 角色**（比如只允许某个 namespace 的只读操作）。这里根本**没有需要长期保管的密钥**——用的是 STS 现签的短期凭证；Agent 不持有集群访问用的 kubeconfig 或 token，只接收这次 EKS 工具调用的返回值。要不要放行这次操作，仍由 Cedar 按用户身份与参数判定。
 
-- **反模式**：把一份 cluster-admin 的 kubeconfig / 长期 token 存进 Secrets Manager，Agent 取出后直连 EKS API。凭证物化在 Agent 进程里，权限是整个集群的 admin，且长期有效——Agent 一旦失守，攻击者拿到的就是"随时可用的集群最高权限"，正是开篇攻击链里"拿到两个集群 cluster-admin"的那一步。
-- **推荐**：把 EKS 操作封装成 Gateway 后面的工具（如一个 Lambda / MCP target，只暴露 `list_pods`、`restart_deployment` 这类具体动作）。Gateway 侧通过 Credential Provider 假设一个**窄权限 IAM 角色**，该角色再经 EKS 的 access entry 映射到一个**受限的 Kubernetes RBAC 角色**（比如只允许某个 namespace 的只读操作）。这里根本**没有需要长期保管的密钥**——用的是 STS 现签的短期凭证；Agent 手里既没有 kubeconfig 也没有 token，只有一次工具调用的返回值。要不要放行这次操作，仍由 Cedar 按用户身份与参数判定。
-
-两种做法的本质差别，是**凭证的爆炸半径**：反模式下，泄露一份密钥＝丢掉它能触达的一切、且长期有效；推荐做法下，即便 Agent 环境被攻破，爆炸半径也被压在"受控组件 + 这一个目标 + 这次短期凭证"之内。开篇那次越界之所以能一路放大到 cluster-admin，缺的正是这一层。三个身份域由此清晰分开：
+两种做法的本质差别，是**凭证的爆炸半径**：反模式下，泄露一份密钥＝丢掉它能触达的一切、且长期有效；推荐做法下，Agent 环境被攻破不会直接暴露由受控组件保管的下游长期凭证；Gateway 仍按 Cedar 的策略约束相关工具调用。开篇那次越界之所以能一路放大到 cluster-admin，缺的正是这一层。三个身份域由此清晰分开：
 
 ![三个身份域清晰分离：Agent 只当信使，不持长期凭证](images/04-identity-domains.png)
 
