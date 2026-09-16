@@ -43,7 +43,7 @@
 <text x="323.0" y="208.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="normal" fill="#16191F" text-anchor="middle">② 签发含业务 Claims 的短期 JWT</text>
 <line x1="403" y1="262" x2="543" y2="262" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <text x="475.0" y="254.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="middle">③ Authorization: Bearer &lt;user-JWT&gt;</text>
-<text x="565" y="302" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="start">④ 原生 Inbound Auth：验证签名 / 有效期 / audience</text>
+<text x="565" y="302" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="start">④ 原生 Inbound Auth：验证签名 / 有效期 / client_id</text>
 <path d="M551,312 h44 v22 h-44" fill="none" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <line x1="555" y1="384" x2="695" y2="384" stroke="#EC7211" stroke-width="2" marker-end="url(#ah_or)"/>
 <text x="627.0" y="376.0" font-family="Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#EC7211" text-anchor="middle">⑤ 进入 handler，从 RequestContext 取出 Bearer</text>

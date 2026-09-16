@@ -14,13 +14,13 @@
     <rect x="66" y="173" width="708" height="220" rx="12" fill="#EDF2F5" stroke="#ACBAC5" stroke-width="1.2"/>
     <text x="420" y="195" font-size="16" font-weight="400" fill="#232F3E">5  身份层</text>
     <rect x="80" y="204" width="680" height="184" rx="12" fill="#EBF0F3" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="420" y="226" font-size="16" font-weight="400" fill="#232F3E">4  网络与出口层</text>
-    <rect x="94" y="235" width="652" height="148" rx="12" fill="#FFF3E0" stroke="#FF9900" stroke-width="2.5"/>
-    <text x="420" y="257" font-size="16" font-weight="700" fill="#C75F00">3  会话与运行时层</text>
-    <rect x="108" y="266" width="624" height="112" rx="12" fill="#E3EBF0" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="420" y="288" font-size="16" font-weight="400" fill="#232F3E">2  模型与编排层</text>
+    <text x="420" y="226" font-size="16" font-weight="400" fill="#232F3E">4  输入与内容层</text>
+    <rect x="94" y="235" width="652" height="148" rx="12" fill="#E7EEF3" stroke="#ACBAC5" stroke-width="1.2"/>
+    <text x="420" y="257" font-size="16" font-weight="400" fill="#232F3E">3  网络与出口层</text>
+    <rect x="108" y="266" width="624" height="112" rx="12" fill="#FFF3E0" stroke="#FF9900" stroke-width="2.5"/>
+    <text x="420" y="288" font-size="16" font-weight="700" fill="#C75F00">2  会话与运行时层</text>
     <rect x="122" y="297" width="596" height="76" rx="12" fill="#DDE7EE" stroke="#ACBAC5" stroke-width="1.2"/>
-    <text x="420" y="319" font-size="16" font-weight="400" fill="#232F3E">1  输入与内容层</text>
+    <text x="420" y="319" font-size="16" font-weight="400" fill="#232F3E">1  模型与编排层</text>
     <rect x="136" y="328" width="568" height="36" rx="9" fill="#232F3E"/>
     <text x="420" y="352" font-size="18" font-weight="700" fill="#FFFFFF">Agent 核心逻辑</text>
   </g>

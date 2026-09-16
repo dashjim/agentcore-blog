@@ -55,9 +55,9 @@ Agent 构建者需要认识到，Agent 在决策方式、执行能力和状态�
 
 很多团队的第一反应是"把 Agent 关进容器就好了"。但普通容器与宿主机**共享同一个内核**，仅靠 namespaces 和 cgroups 做隔离——让容器轻量的机制，恰恰是它在配置不当或存在漏洞时可被突破的原因。它可以降低风险，但不能被当作运行不可信代码时"不可突破的最终边界"。
 
-以 **CVE-2024-21626（"Leaky Vessels"，CVSS 8.6）** 为例：runc 的文件描述符泄漏，使得一个恶意镜像——甚至只是 Dockerfile 里的一行 `FROM`——就有机会越过容器文件系统边界，读写宿主机。也就是说，镜像与容器的**启动过程本身**就可能成为逃逸入口。
+以 **[CVE-2024-21626](https://github.com/opencontainers/runc/security/advisories/GHSA-xr7r-f8xq-vfvv)（"Leaky Vessels"，CVSS v3.1 8.6）** 为例：runc 的文件描述符泄漏，使得一个恶意镜像——甚至只是 Dockerfile 里的一行 `FROM`——就有机会越过容器文件系统边界，读写宿主机。也就是说，镜像与容器的**启动过程本身**就可能成为逃逸入口。
 
-这不是孤例。运行时层面，2025 年底披露的一组 runc 漏洞（`CVE-2025-31133 / 52565 / 52881`，CVSS 7.3）通过挂载竞态与 procfs 写重定向实现完整逃逸，甚至能绕过 AppArmor/SELinux——连 LSM 都不该被当作最后一道墙。内核层面，`CVE-2026-64564`（"SCTPhantom"，CVSS 8.5，潜伏了 18 年）在默认 seccomp、无特权能力的条件下依然能多次逃逸拿到 root，说明**即使容器运行时零缺陷，共享内核本身仍是一个逃逸面**。
+这不是孤例。运行时层面，2025 年底披露的一组 runc 漏洞（[CVE-2025-31133](https://github.com/opencontainers/runc/security/advisories/GHSA-9493-h29p-rfm2) / [CVE-2025-52565](https://github.com/opencontainers/runc/security/advisories/GHSA-qw9x-cqr3-wc7r) / [CVE-2025-52881](https://github.com/opencontainers/runc/security/advisories/GHSA-cgrx-mc8f-2prm)，CVSS v4.0 7.3–8.4）通过挂载竞态与 procfs 写重定向实现完整逃逸，甚至能绕过 AppArmor/SELinux——连 LSM 都不该被当作最后一道墙。内核层面，SCTPhantom（[CVE-2026-64564](https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564)，CVSS v4.0 8.5）在内核中潜伏了 18 年。研究团队在保留默认 seccomp、未授予 `CAP_NET_ADMIN` 和 `CAP_SYS_ADMIN` 的测试容器中，仍多次利用该漏洞获得宿主机 root 权限，说明**即使容器运行时零缺陷，共享内核本身仍是一个逃逸面**。
 
 补丁、seccomp、AppArmor/SELinux、只读文件系统、能力裁剪、网络策略当然仍然必要，它们能显著降低逃逸的概率和影响。但它们无法从架构上抹掉"共享内核"这层边界。
 
@@ -73,18 +73,18 @@ AgentCore Runtime 是专为 Agent 和工具设计的托管运行环境；本文�
 
 我们仍然要遵从“不发明安全算法”的约束，基于久经考验的安全框架设计 Agent 时代的安全体系。
 
-我们建议基于**洋葱模型**设计 Agent 的安全体系：把彼此独立的安全控制放在多层相互嵌套的边界上，任何单层失效都不应直接导致整个系统失守。它是一种设计结构，不依赖单一产品。用于 Agent，可以分成八层：
+我们建议基于**洋葱模型**设计 Agent 的安全体系：把彼此独立的安全控制放在多层相互嵌套的边界上，任何单层失效都不应直接导致整个系统失守。它是一种设计结构，不依赖单一产品。用于 Agent，本文按由内到外的防护位置分成八层，层号不代表请求处理顺序：
 
-1. **输入与内容层**——提示注入检测、内容过滤、不可信数据标记；
-2. **模型与编排层**——限制自主循环、高风险操作二次确认、约束工具选择；
-3. **会话与运行时层**——按用户/会话隔离执行环境，结束即销毁、清理内存；
-4. **网络与出口层**——默认拒绝出站，白名单化 egress，限制到内网与实例元数据服务的访问；
+1. **模型与编排层**——Agent 框架限制自主循环、约束工具选择，高风险操作由人工二次确认；
+2. **会话与运行时层**——运行平台按用户/会话隔离执行环境，并在会话结束时销毁环境、清理内存；
+3. **网络与出口层**——网络控制组件默认拒绝出站，通过白名单限制对内网与实例元数据服务的访问；
+4. **输入与内容层**——独立的内容过滤组件在 Agent 运行环境之外执行提示注入检测、内容过滤和不可信数据标记；
 5. **身份层**——每次请求都携带可验证的用户或工作负载身份；
 6. **工具授权层**——对每个工具及关键参数做独立、确定性的策略判断；
 7. **凭证与下游访问层**——长期凭证由受控组件管理，Agent 只按需拿短期访问能力；
 8. **审计与治理层**——记录用户、会话、模型决策、工具调用、策略结果与下游响应。
 
-第四层——**网络与出口**——常被忽略，却往往是攻击链的放大器。开篇那次越界，最后一步正是"改写 DNS 绕过出口封锁"；许多真实事件的共同短板里也都有"缺失的出口管控"；甚至前面提到的 SCTPhantom 这类内核逃逸漏洞，本身就出在网络子系统。**能不能出网、只能出到哪里，必须由平台强制，而不是指望 Agent 自觉。**
+第三层——**网络与出口**——常被忽略，却往往是攻击链的放大器。开篇那次越界，最后一步正是"改写 DNS 绕过出口封锁"；许多真实事件的共同短板里也都有"缺失的出口管控"；甚至前面提到的 SCTPhantom 这类内核逃逸漏洞，本身就出在网络子系统。**能不能出网、只能出到哪里，必须由平台强制，而不是指望 Agent 自觉。**
 
 <img src="images/02-onion-model.png" alt="洋葱模型：多层嵌套、任一层失效都不致命" width="600">
 
@@ -117,10 +117,10 @@ Cedar 只作授权判定，不拦截请求；AgentCore Gateway 负责执行这�
 
 | 层 | 亚马逊云科技上的实现 |
 | --- | --- |
-| 1 输入与内容层 | Amazon Bedrock Guardrails：提示注入检测、内容过滤 |
-| 2 模型与编排层 | Agent 框架（如 Strands Agents）约束工具选择与自主循环；高风险动作交由 AgentCore Policy 强制判定 |
-| 3 会话与运行时层 | AgentCore Runtime：会话级 microVM，结束即销毁、清理内存 |
-| 4 网络与出口层 | AgentCore Runtime 的 VPC 模式 + 安全组 / Network Firewall：默认拒绝出站、白名单 egress |
+| 1 模型与编排层 | Agent 框架（如 Strands Agents）约束工具选择与自主循环；高风险动作交由 AgentCore Policy 强制判定 |
+| 2 会话与运行时层 | AgentCore Runtime：会话级 microVM，结束即销毁、清理内存 |
+| 3 网络与出口层 | AgentCore Runtime 的 VPC 模式 + 安全组 / Network Firewall：默认拒绝出站、白名单 egress |
+| 4 输入与内容层 | 应用入口处的内容过滤组件调用 Amazon Bedrock Guardrails，执行提示注入检测与内容过滤 |
 | 5 身份层 | AgentCore Identity（Inbound Auth / JWT Authorizer）+ Amazon Cognito 或任意 OIDC IdP |
 | 6 工具授权层 | AgentCore Gateway + AgentCore Policy（Cedar） |
 | 7 凭证与下游访问层 | AgentCore Identity 的 Credential Provider + IAM 角色 / STS 短期凭证 |
@@ -178,7 +178,7 @@ def lambda_handler(event, context):
 }
 ```
 
-这里用的是 `allowedClients`（对照令牌里的 `client_id`），而不是 `allowedAudience`（对照 `aud`）。原因是 Amazon Cognito 用户登录拿到的 access token 默认**没有 `aud` 声明**，只有 `client_id`；配了 `allowedAudience`，所有合法令牌反而都会被拒。这个选择在 4.3 会带来一个必须正视的后果。
+Amazon Cognito 用户登录获取的 access token 默认不带 `aud`，本例因此用 `allowedClients` 校验 `client_id`。若通过 resource binding 等方式签发带 `aud` 的令牌，应通过 `allowedAudience` 配置预期的资源接收方。
 
 再把 `Authorization` 头加入白名单，让 handler 能读到它：
 
@@ -226,17 +226,11 @@ def handler(payload, context: RequestContext):
 
 代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立的 app client 或 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
 
-**透传方案还有一个必须正视的问题：同一张令牌，两跳都收。** OAuth 2.0 里表示"这张令牌发给谁用"的字段是 `aud`（audience）：资源服务器只接受 `aud` 是自己的令牌，一张发给 A 的令牌拿到 B 去用会被拒绝。但如 4.2 所述，Cognito 默认令牌里没有 `aud`，AgentCore Runtime 和 AgentCore Gateway 只能各自核对 `client_id`。两者配的是同一个 app client，于是用户登录换来的这一张令牌，既能调用 Runtime，也能直接调用 Gateway——没有任何字段能把这两跳区分开。透传之所以"跑得通"，恰恰是因为 audience 这道防线在这套配置里并不存在。AWS 文档在讨论 AgentCore Gateway 的令牌透传（token passthrough）模式时说得很直接：不推荐用于生产，因为同一张令牌会被 gateway 和下游同时接受；推荐的做法是 OBO 令牌交换。
-
-这个问题的实际影响，取决于这个 app client 还给谁发令牌。若它只服务这一条 Agent 链，Runtime 与 Gateway 处在同一信任域内，风险有限；若同一个 app client 还被其他系统复用，那么用户登录任何一个系统拿到的令牌都能直接调用航空 Gateway——Cedar 只看 `loyalty_tier`，并不知道这张令牌本该给谁。在透传模式下能做的缓解有三条：为这条链使用专用 app client，不与其他系统共用；令牌有效期尽量短；在 AgentCore Runtime 的 authorizer 上配置 `allowedWorkloadConfiguration`，只接受经指定 AgentCore Gateway 进来的调用，堵住绕开 Gateway 直连 Runtime 的路径。
-
-要真正做到"按资源限定 audience"，有两条路。一条是让 IdP 发出带 `aud` 的令牌：Cognito 可以通过 resource binding 让 access token 携带资源服务器标识，AgentCore 侧再改用 `allowedAudience` 校验。另一条是 **AgentCore Identity 的 On-Behalf-Of（OBO）Token Exchange**，也是 AWS 推荐的生产做法：Agent 应用不再转发原始用户 JWT，而是用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 在 Credential Provider 内部以原始令牌为 subject token，按 RFC 8693 或 RFC 7523 与授权服务器完成交换，换回一张 **audience 限定为 AgentCore Gateway、scope 按需收窄**、同时携带用户身份与 Agent 身份的新令牌。发给 Runtime 的令牌打不动 Gateway，发给 Gateway 的令牌也打不动别处，每一跳的令牌只在这一跳有效。Agent 应用因此既不读取原始用户 JWT，也不管理换票所用的客户端密钥。
-
-OBO 的前提是授权服务器支持令牌交换：AgentCore Identity 对 Microsoft Entra 提供开箱配置，其余 IdP 通过自定义 OAuth2 provider 接入；Cognito 目前不实现 RFC 8693，所以本文这套以 Cognito 为 IdP 的实现停留在透传模式。接入 OBO 时还要让 AgentCore Gateway 验证换票后的新令牌，并由授权服务器在新令牌中带上工具授权所需的可信业务 claims（如 `loyalty_tier`），下一步的 Cedar 策略才能不改地继续工作。
+本例的 JWT 透传应使用专用 Cognito app client，AgentCore Runtime 与 AgentCore Gateway 分别校验 `client_id`，这套配置尚未按资源区分 audience。生产环境可采用 **AgentCore Identity 的 On-Behalf-Of（OBO）Token Exchange**：AgentCore Identity 向授权服务器换取面向 AgentCore Gateway、限定 audience 和 scope 的令牌，Agent 应用使用新令牌调用工具。该方案需要支持令牌交换的授权服务器；Cognito 目前不支持这一流程，新令牌也需保留用户授权所需的可信业务 claims。
 
 ### 4.4 第四步：AgentCore Gateway 再次验证，Cedar 决定工具权限
 
-请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和允许的 `client_id`（若令牌带 `aud`，也一并校验 audience），然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
+请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和允许的 `client_id`（采用带 `aud` 的令牌时，还需配置并校验预期 audience），然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
 
 本例中，Agent 应用应使用当前用户的 JWT 调用 AgentCore Gateway，不应改用共享 Service Role（服务角色）的身份。若应用仅以服务角色身份发起调用，AgentCore Gateway 就无法从该身份中获得当前用户的 `loyalty_tier` 等业务 claims，AgentCore Policy 也就无法据此执行本文的用户级授权。AgentCore Runtime 运行 Agent、AgentCore Gateway 访问下游资源仍可使用各自所需的 IAM 角色，但这些角色的权限不能代替用户的工具权限。
 
@@ -299,7 +293,7 @@ permit (
 所以体系化的 Agent 安全，不能押注在某一个护栏或某一个沙箱上，而要让下面这些边界**各自独立成立**：
 
 1. 以不可信代码为前提、会话结束即销毁的运行隔离；
-2. 从用户到 AgentCore Runtime、再到 AgentCore Gateway 的可验证身份链——透传短期用户令牌，Agent 不持长期凭证；生产环境进一步用 OBO 换取按资源限定 audience 的令牌，让每一跳的令牌只在这一跳有效；
+2. 从用户到 AgentCore Runtime、再到 AgentCore Gateway 的可验证身份链——Agent 不持长期凭证；生产环境通过 OBO 按目标资源限定下游令牌的 audience 与 scope；
 3. 面向每个工具与参数的确定性授权（Cedar）；
 4. 下游长期凭证不进入 Agent 环境（AgentCore Identity 的 Credential Provider）；
 5. 覆盖全调用链的审计、检测与撤销。
@@ -317,3 +311,8 @@ permit (
 5. [AgentCore 配置 Inbound JWT Authorizer（allowedAudience / allowedClients 语义）](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/inbound-jwt-authorizer.html)
 6. [AgentCore Gateway Inbound 授权（含令牌透传与 OBO 建议）](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html)
 7. [Amazon Cognito 访问令牌的声明说明](https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-the-access-token.html)
+8. [CVE-2024-21626：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-xr7r-f8xq-vfvv)
+9. [CVE-2025-31133：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-9493-h29p-rfm2)
+10. [CVE-2025-52565：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-qw9x-cqr3-wc7r)
+11. [CVE-2025-52881：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-cgrx-mc8f-2prm)
+12. [CVE-2026-64564：SCTPhantom 研究报告](https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564)
