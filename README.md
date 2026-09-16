@@ -165,18 +165,20 @@ def lambda_handler(event, context):
 
 令牌怎么进 AgentCore Runtime？AgentCore 提供了两种方式：一种是把 JWT 塞进调用 payload、由应用自己解析（容易只透传不验证）；另一种是**原生 Inbound Auth**——把 JWT 放在标准的 `Authorization` 头，由 AgentCore Runtime 在边界自动验证。我们只用后者。
 
-配置一个 `customJWTAuthorizer`，指向 IdP 的 OIDC discovery 地址并限定 audience：
+配置一个 `customJWTAuthorizer`，指向 IdP 的 OIDC discovery 地址，并限定允许的 app client：
 
 ```json
 {
   "authorizerConfiguration": {
     "customJWTAuthorizer": {
       "discoveryUrl": "https://cognito-idp.<region>.amazonaws.com/<pool-id>/.well-known/openid-configuration",
-      "allowedAudiences": ["<app-client-id>"]
+      "allowedClients": ["<app-client-id>"]
     }
   }
 }
 ```
+
+这里用的是 `allowedClients`（对照令牌里的 `client_id`），而不是 `allowedAudience`（对照 `aud`）。原因是 Amazon Cognito 用户登录拿到的 access token 默认**没有 `aud` 声明**，只有 `client_id`；配了 `allowedAudience`，所有合法令牌反而都会被拒。这个选择在 4.3 会带来一个必须正视的后果。
 
 再把 `Authorization` 头加入白名单，让 handler 能读到它：
 
@@ -185,7 +187,7 @@ request_header_allowlist:
   - "Authorization"
 ```
 
-于是客户端只需一个标准 HTTP 请求：`POST /invoke`，头部 `Authorization: Bearer <user-jwt>`，body 里只放业务数据 `{"prompt": "改签我的航班"}`。AgentCore Runtime 会自动完成签名验证、过期检查、audience 校验——**无效令牌在进入 Agent 逻辑之前就被拒绝（401）**。验证发生在边界，而不是在 Agent 代码里。
+于是客户端只需一个标准 HTTP 请求：`POST /invoke`，头部 `Authorization: Bearer <user-jwt>`，body 里只放业务数据 `{"prompt": "改签我的航班"}`。AgentCore Runtime 会自动完成签名验证、过期检查、`client_id` 校验——**无效令牌在进入 Agent 逻辑之前就被拒绝（401）**。验证发生在边界，而不是在 Agent 代码里。
 
 ### 4.3 第三步：Agent 取出 JWT 并透传给 AgentCore Gateway
 
@@ -220,15 +222,21 @@ def handler(payload, context: RequestContext):
     return agent(payload.get("prompt"))
 ```
 
-透传意味着 Agent 在单次请求内**确实持有一个短期用户令牌**——所以它的安全性建立在这样一组约束上：令牌短时有效、限定 audience 与 scope、不落盘、不写日志、不写入记忆或追踪属性、缺失即 `fail closed`。它不是"Agent 完全不碰凭证"，而是"Agent 只在请求生命周期内受控地持有短期身份令牌，且从不持有长期静态凭证"。
+透传意味着 Agent 在单次请求内**确实持有一个短期用户令牌**——所以它的安全性建立在这样一组约束上：令牌短时有效、不落盘、不写日志、不写入记忆或追踪属性、缺失即 `fail closed`。它不是"Agent 完全不碰凭证"，而是"Agent 只在请求生命周期内受控地持有短期身份令牌，且从不持有长期静态凭证"。
 
-代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
+代码里还有两个容易踩的坑值得强调：一是从 `RequestContext` 取到的值已经带 `Bearer ` 前缀，注入下游时别再拼一次，否则会变成 `Bearer Bearer <jwt>`；二是**不要在用户令牌缺失时静默 fallback 到机器身份（M2M）**——那会丢失端到端可追溯性，让 AgentCore Gateway 无法执行用户级策略，甚至让 Agent 意外获得更宽的权限。若确实需要服务间调用，应该走独立入口、独立的 app client 或 audience、独立的 AgentCore Policy 策略，而不是和用户身份互相兜底。
 
-在当前实现中，Agent 应用仍会在运行环境中读取并转发用户的原始 JWT。AgentCore Identity 新增的 **On-Behalf-Of（OBO）Token Exchange** 提供了另一种方式：Agent 应用使用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 负责与支持 OBO 的授权服务器完成交换，由授权服务器按授权策略签发限定下游 audience 和 scope 的访问令牌。Agent 应用因此无需读取或透传原始用户 JWT，也无需管理换票所需的客户端密钥，但仍会在调用下游时使用换取的访问令牌。开发者接入 OBO 时，还需配置相应的授权服务器，让 AgentCore Gateway 验证新令牌，并由授权服务器在新令牌中提供工具授权所需的可信业务 claims。
+**透传方案还有一个必须正视的问题：同一张令牌，两跳都收。** OAuth 2.0 里表示"这张令牌发给谁用"的字段是 `aud`（audience）：资源服务器只接受 `aud` 是自己的令牌，一张发给 A 的令牌拿到 B 去用会被拒绝。但如 4.2 所述，Cognito 默认令牌里没有 `aud`，AgentCore Runtime 和 AgentCore Gateway 只能各自核对 `client_id`。两者配的是同一个 app client，于是用户登录换来的这一张令牌，既能调用 Runtime，也能直接调用 Gateway——没有任何字段能把这两跳区分开。透传之所以"跑得通"，恰恰是因为 audience 这道防线在这套配置里并不存在。AWS 文档在讨论 AgentCore Gateway 的令牌透传（token passthrough）模式时说得很直接：不推荐用于生产，因为同一张令牌会被 gateway 和下游同时接受；推荐的做法是 OBO 令牌交换。
+
+这个问题的实际影响，取决于这个 app client 还给谁发令牌。若它只服务这一条 Agent 链，Runtime 与 Gateway 处在同一信任域内，风险有限；若同一个 app client 还被其他系统复用，那么用户登录任何一个系统拿到的令牌都能直接调用航空 Gateway——Cedar 只看 `loyalty_tier`，并不知道这张令牌本该给谁。在透传模式下能做的缓解有三条：为这条链使用专用 app client，不与其他系统共用；令牌有效期尽量短；在 AgentCore Runtime 的 authorizer 上配置 `allowedWorkloadConfiguration`，只接受经指定 AgentCore Gateway 进来的调用，堵住绕开 Gateway 直连 Runtime 的路径。
+
+要真正做到"按资源限定 audience"，有两条路。一条是让 IdP 发出带 `aud` 的令牌：Cognito 可以通过 resource binding 让 access token 携带资源服务器标识，AgentCore 侧再改用 `allowedAudience` 校验。另一条是 **AgentCore Identity 的 On-Behalf-Of（OBO）Token Exchange**，也是 AWS 推荐的生产做法：Agent 应用不再转发原始用户 JWT，而是用 AgentCore Runtime 提供的工作负载访问令牌，向 AgentCore Identity 请求下游令牌；AgentCore Identity 在 Credential Provider 内部以原始令牌为 subject token，按 RFC 8693 或 RFC 7523 与授权服务器完成交换，换回一张 **audience 限定为 AgentCore Gateway、scope 按需收窄**、同时携带用户身份与 Agent 身份的新令牌。发给 Runtime 的令牌打不动 Gateway，发给 Gateway 的令牌也打不动别处，每一跳的令牌只在这一跳有效。Agent 应用因此既不读取原始用户 JWT，也不管理换票所用的客户端密钥。
+
+OBO 的前提是授权服务器支持令牌交换：AgentCore Identity 对 Microsoft Entra 提供开箱配置，其余 IdP 通过自定义 OAuth2 provider 接入；Cognito 目前不实现 RFC 8693，所以本文这套以 Cognito 为 IdP 的实现停留在透传模式。接入 OBO 时还要让 AgentCore Gateway 验证换票后的新令牌，并由授权服务器在新令牌中带上工具授权所需的可信业务 claims（如 `loyalty_tier`），下一步的 Cedar 策略才能不改地继续工作。
 
 ### 4.4 第四步：AgentCore Gateway 再次验证，Cedar 决定工具权限
 
-请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和预期 audience，然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
+请求到达 AgentCore Gateway，零信任要求它**独立地再验证一次**：校验 JWT 的签名、有效期和允许的 `client_id`（若令牌带 `aud`，也一并校验 audience），然后把可信 claims 映射为 **Cedar 的 principal 属性**。之后 AgentCore Policy 引擎同时评估四个维度——principal（谁）、action（哪个工具）、resource（哪个 AgentCore Gateway/Target）、context（工具参数）——只有结果为 `PERMIT` 才把调用转发给真正的工具。
 
 本例中，Agent 应用应使用当前用户的 JWT 调用 AgentCore Gateway，不应改用共享 Service Role（服务角色）的身份。若应用仅以服务角色身份发起调用，AgentCore Gateway 就无法从该身份中获得当前用户的 `loyalty_tier` 等业务 claims，AgentCore Policy 也就无法据此执行本文的用户级授权。AgentCore Runtime 运行 Agent、AgentCore Gateway 访问下游资源仍可使用各自所需的 IAM 角色，但这些角色的权限不能代替用户的工具权限。
 
@@ -291,7 +299,7 @@ permit (
 所以体系化的 Agent 安全，不能押注在某一个护栏或某一个沙箱上，而要让下面这些边界**各自独立成立**：
 
 1. 以不可信代码为前提、会话结束即销毁的运行隔离；
-2. 从用户到 AgentCore Runtime、再到 AgentCore Gateway 的可验证身份链——透传短期用户令牌，Agent 不持长期凭证；
+2. 从用户到 AgentCore Runtime、再到 AgentCore Gateway 的可验证身份链——透传短期用户令牌，Agent 不持长期凭证；生产环境进一步用 OBO 换取按资源限定 audience 的令牌，让每一跳的令牌只在这一跳有效；
 3. 面向每个工具与参数的确定性授权（Cedar）；
 4. 下游长期凭证不进入 Agent 环境（AgentCore Identity 的 Credential Provider）；
 5. 覆盖全调用链的审计、检测与撤销。
@@ -306,3 +314,6 @@ permit (
 2. [AgentCore Gateway 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html)
 3. [AgentCore Policy 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html)
 4. [AgentCore Identity OBO Token Exchange 官方文档](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html)
+5. [AgentCore 配置 Inbound JWT Authorizer（allowedAudience / allowedClients 语义）](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/inbound-jwt-authorizer.html)
+6. [AgentCore Gateway Inbound 授权（含令牌透传与 OBO 建议）](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html)
+7. [Amazon Cognito 访问令牌的声明说明](https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-the-access-token.html)
