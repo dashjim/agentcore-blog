@@ -316,3 +316,4 @@ permit (
 10. [CVE-2025-52565：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-qw9x-cqr3-wc7r)
 11. [CVE-2025-52881：runc 官方安全公告](https://github.com/opencontainers/runc/security/advisories/GHSA-cgrx-mc8f-2prm)
 12. [CVE-2026-64564：SCTPhantom 研究报告](https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564)
+13. [Hugging Face：2026 年 7 月 Agent 入侵事件技术复盘](https://huggingface.co/blog/agent-intrusion-technical-timeline)
